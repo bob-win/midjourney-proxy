@@ -48,7 +48,17 @@ public class BaiduTranslateServiceImpl implements TranslateService {
 			}
 			return result.getJSONArray("trans_result").getJSONObject(0).getString("dst");
 		} catch (Exception e) {
-			log.warn("调用百度翻译失败: {}", e.getMessage());
+			String strIp = "";
+			try{
+				ResponseEntity<String> responseEntity2 = new RestTemplate().getForEntity("https://ip.cn/api/index?ip=&type=0", String.class);
+				if (responseEntity2.getStatusCode() != HttpStatus.OK || CharSequenceUtil.isBlank(responseEntity2.getBody())) {
+					throw new ValidateException(responseEntity2.getStatusCodeValue() + " - " + responseEntity2.getBody());
+				}
+				JSONObject result2 = new JSONObject(responseEntity2.getBody());
+				strIp = result2.getString("ip");
+			}catch (Exception e2) {
+			}
+			log.warn("调用百度翻译失败: {}", e.getMessage() + "," + strIp);
 		}
 		return prompt;
 	}
