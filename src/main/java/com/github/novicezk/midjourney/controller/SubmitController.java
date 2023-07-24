@@ -29,6 +29,7 @@ import eu.maxschuster.dataurl.IDataUrlSerializer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Api(tags = "任务提交")
 @RestController
 @RequestMapping("/submit")
@@ -61,9 +63,11 @@ public class SubmitController {
 		task.setAction(TaskAction.IMAGINE);
 		task.setPrompt(prompt);
 		String promptEn;
+		log.warn("收到prompt: {}", prompt);
 		int paramStart = prompt.indexOf(" --");
 		if (paramStart > 0) {
 			promptEn = this.translateService.translateToEnglish(prompt.substring(0, paramStart)).trim() + prompt.substring(paramStart);
+			log.warn("翻译后: {}", promptEn);
 		} else {
 			promptEn = this.translateService.translateToEnglish(prompt).trim();
 		}
@@ -71,6 +75,7 @@ public class SubmitController {
 			promptEn = prompt;
 		}
 		if (BannedPromptUtils.isBanned(promptEn)) {
+			log.warn("可能包含敏感词");
 			return SubmitResultVO.fail(ReturnCode.BANNED_PROMPT, "可能包含敏感词");
 		}
 		DataUrl dataUrl = null;
